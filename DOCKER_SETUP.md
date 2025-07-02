@@ -58,7 +58,7 @@
 - `{DOCKER_USERNAME}/kkfileview:latest`
 
 #### GitHub Container Registry:
-- `ghcr.io/{GITHUB_USERNAME}/kkfileview:{VERSION}`
+- `ghcr.io/{GITHUB_USERNAME}/kkfileview:{VERSION}` (仓库名自动转换为小写)
 - `ghcr.io/{GITHUB_USERNAME}/kkfileview:latest`
 
 ## 支持的架构
@@ -112,6 +112,14 @@ docker run -d -p 8012:8012 ghcr.io/your-username/kkfileview:latest
 5. Docker镜像会自动检测实际的应用版本，无需手动修改Dockerfile
 6. 基础镜像版本（keking/kkfileview-base）可能与应用版本不同，这是正常的
 
+## 重要说明
+
+### 仓库名称大小写处理
+
+- **GitHub Container Registry** 要求仓库名称必须是小写
+- 工作流会自动将仓库名称转换为小写（如：`kkFileView` → `kkfileview`）
+- Docker Hub 不受此限制影响
+
 ## 故障排除
 
 ### 常见问题：
@@ -123,9 +131,14 @@ docker run -d -p 8012:8012 ghcr.io/your-username/kkfileview:latest
 2. **GitHub Container Registry推送失败**
    - 确认仓库的Package权限设置
    - 检查`GITHUB_TOKEN`权限
+   - 注意：仓库名称会自动转换为小写
 
 3. **多架构构建失败**
    - 检查Dockerfile是否支持多架构
    - 确认基础镜像支持目标架构
+
+4. **标签格式错误**
+   - 确保VERSION文件格式正确
+   - GitHub Container Registry标签必须是小写
 
 如有问题，请查看GitHub Actions的构建日志获取详细错误信息。

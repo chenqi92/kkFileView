@@ -62,8 +62,14 @@ jobs:
         
     - name: Extract repository name
       id: repo
-      run: echo "REPO_NAME=${GITHUB_REPOSITORY#*/}" >> $GITHUB_OUTPUT
-        
+      run: |
+        REPO_NAME=${GITHUB_REPOSITORY#*/}
+        REPO_NAME_LOWER=$(echo "$REPO_NAME" | tr '[:upper:]' '[:lower:]')
+        echo "REPO_NAME=$REPO_NAME" >> $GITHUB_OUTPUT
+        echo "REPO_NAME_LOWER=$REPO_NAME_LOWER" >> $GITHUB_OUTPUT
+        echo "Original repo name: $REPO_NAME"
+        echo "Lowercase repo name: $REPO_NAME_LOWER"
+
     - name: Build and push Docker images
       uses: docker/build-push-action@v5
       with:
@@ -75,8 +81,8 @@ jobs:
         tags: |
           ${{ secrets.DOCKER_USERNAME }}/kkfileview:${{ steps.version.outputs.VERSION }}
           ${{ secrets.DOCKER_USERNAME }}/kkfileview:latest
-          ghcr.io/${{ github.repository_owner }}/${{ steps.repo.outputs.REPO_NAME }}:${{ steps.version.outputs.VERSION }}
-          ghcr.io/${{ github.repository_owner }}/${{ steps.repo.outputs.REPO_NAME }}:latest
+          ghcr.io/${{ github.repository_owner }}/${{ steps.repo.outputs.REPO_NAME_LOWER }}:${{ steps.version.outputs.VERSION }}
+          ghcr.io/${{ github.repository_owner }}/${{ steps.repo.outputs.REPO_NAME_LOWER }}:latest
         cache-from: type=gha
         cache-to: type=gha,mode=max
         
@@ -89,22 +95,26 @@ jobs:
         release_name: Release v${{ steps.version.outputs.VERSION }}
         body: |
           ## Docker Images
-          
+
           ### Docker Hub
           - `${{ secrets.DOCKER_USERNAME }}/kkfileview:${{ steps.version.outputs.VERSION }}`
           - `${{ secrets.DOCKER_USERNAME }}/kkfileview:latest`
-          
+
           ### GitHub Container Registry
-          - `ghcr.io/${{ github.repository_owner }}/${{ steps.repo.outputs.REPO_NAME }}:${{ steps.version.outputs.VERSION }}`
-          - `ghcr.io/${{ github.repository_owner }}/${{ steps.repo.outputs.REPO_NAME }}:latest`
-          
+          - `ghcr.io/${{ github.repository_owner }}/${{ steps.repo.outputs.REPO_NAME_LOWER }}:${{ steps.version.outputs.VERSION }}`
+          - `ghcr.io/${{ github.repository_owner }}/${{ steps.repo.outputs.REPO_NAME_LOWER }}:latest`
+
           ### Supported Architectures
           - linux/amd64
           - linux/arm64
-          
+
           ### Usage
           ```bash
+          # Using Docker Hub
           docker run -d -p 8012:8012 ${{ secrets.DOCKER_USERNAME }}/kkfileview:${{ steps.version.outputs.VERSION }}
+
+          # Using GitHub Container Registry
+          docker run -d -p 8012:8012 ghcr.io/${{ github.repository_owner }}/${{ steps.repo.outputs.REPO_NAME_LOWER }}:${{ steps.version.outputs.VERSION }}
           ```
         draft: false
         prerelease: false

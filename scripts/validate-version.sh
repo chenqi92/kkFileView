@@ -47,11 +47,23 @@ if [ -f "pom.xml" ]; then
     fi
 fi
 
+# 获取仓库名称并转换为小写（用于GitHub Container Registry）
+REPO_NAME=$(basename "$(pwd)")
+REPO_NAME_LOWER=$(echo "$REPO_NAME" | tr '[:upper:]' '[:lower:]')
+
 echo ""
 echo "🐳 Docker images will be tagged as:"
+echo "   Docker Hub:"
 echo "   - your-username/kkfileview:$VERSION"
 echo "   - your-username/kkfileview:latest"
-echo "   - ghcr.io/your-username/kkfileview:$VERSION"
-echo "   - ghcr.io/your-username/kkfileview:latest"
+echo ""
+echo "   GitHub Container Registry:"
+echo "   - ghcr.io/your-username/$REPO_NAME_LOWER:$VERSION"
+echo "   - ghcr.io/your-username/$REPO_NAME_LOWER:latest"
+
+if [ "$REPO_NAME" != "$REPO_NAME_LOWER" ]; then
+    echo ""
+    echo "ℹ️  Note: Repository name '$REPO_NAME' will be converted to lowercase '$REPO_NAME_LOWER' for GitHub Container Registry"
+fi
 
 exit 0
