@@ -1,0 +1,16 @@
+# Documentation
+*.md
+README*
+
+# Git
+.git*
+
+# IDE
+.idea/
+.vscode/
+
+# Temporary files
+*.tmp
+*.temp
+.DS_Store
+Thumbs.db

@@ -1,8 +1,9 @@
-# 使用构建参数来传递版本号
+# 使用构建参数来传递版本号和Docker用户名
 ARG VERSION=4.4.0
+ARG DOCKER_USERNAME=keking
 
-# 使用基础镜像（注意：基础镜像版本可能与应用版本不同）
-FROM keking/kkfileview-base:4.4.0
+# 使用我们构建的基础镜像
+FROM ${DOCKER_USERNAME}/kkfileview-base:${VERSION}
 
 # 添加构建的应用程序
 ADD server/target/kkFileView-*.tar.gz /opt/

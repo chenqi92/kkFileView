@@ -1,0 +1,52 @@
+# Git
+.git
+.gitignore
+.gitattributes
+
+# Documentation
+*.md
+doc/
+docs/
+
+# IDE
+.idea/
+.vscode/
+*.iml
+*.ipr
+*.iws
+
+# Build artifacts (except the target we need)
+target/
+!server/target/kkFileView-*.tar.gz
+!server/target/kkFileView-*.zip
+
+# Maven
+.mvn/
+mvnw
+mvnw.cmd
+
+# Logs
+*.log
+logs/
+
+# Temporary files
+*.tmp
+*.temp
+.DS_Store
+Thumbs.db
+
+# GitHub workflows (not needed in container)
+.github/
+
+# Scripts (not needed in container)
+scripts/
+
+# Other Docker files
+docker/
+Dockerfile.*
+
+# Version control
+VERSION
+SETUP_COMPLETE.md
+DOCKER_SETUP.md
+BUGFIX_LOWERCASE.md

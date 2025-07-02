@@ -9,6 +9,7 @@
 - ✅ 支持多架构构建（AMD64 和 ARM64）
 - ✅ 自动推送到Docker Hub和GitHub Container Registry
 - ✅ 基于VERSION文件的版本管理
+- ✅ 自动构建基础镜像和应用镜像
 - ✅ 自动创建GitHub Release
 - ✅ 构建缓存优化
 
@@ -53,11 +54,15 @@
 
 构建完成后，会生成以下镜像：
 
-#### Docker Hub:
+#### 基础镜像 (Docker Hub):
+- `{DOCKER_USERNAME}/kkfileview-base:{VERSION}`
+- `{DOCKER_USERNAME}/kkfileview-base:latest`
+
+#### 应用镜像 (Docker Hub):
 - `{DOCKER_USERNAME}/kkfileview:{VERSION}`
 - `{DOCKER_USERNAME}/kkfileview:latest`
 
-#### GitHub Container Registry:
+#### 应用镜像 (GitHub Container Registry):
 - `ghcr.io/{GITHUB_USERNAME}/kkfileview:{VERSION}` (仓库名自动转换为小写)
 - `ghcr.io/{GITHUB_USERNAME}/kkfileview:latest`
 

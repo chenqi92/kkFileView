@@ -16,13 +16,20 @@ RUN sed -i 's@//.*archive.ubuntu.com@//mirrors.aliyun.com@g' /etc/apt/sources.li
     apt-get clean &&\
     rm -rf /var/lib/apt/lists/*
 
-# 内置一些常用的中文字体，避免普遍性乱码
-ADD fonts/* /usr/share/fonts/chinese/
+# 创建字体目录
+RUN mkdir -p /usr/share/fonts/chinese
+
+# 内置一些常用的中文字体，避免普遍性乱码（如果存在的话）
+COPY fonts/ /usr/share/fonts/chinese/
 
 RUN cd /usr/share/fonts/chinese &&\
-    # 安装字体
-    mkfontscale &&\
-    mkfontdir &&\
-    fc-cache -fv
+    # 安装字体（如果有字体文件的话）
+    if [ "$(ls -A .)" ]; then \
+        mkfontscale && \
+        mkfontdir && \
+        fc-cache -fv; \
+    else \
+        echo "No custom fonts found, using system fonts only"; \
+    fi
 
 ENV LANG=zh_CN.UTF-8 LC_ALL=zh_CN.UTF-8

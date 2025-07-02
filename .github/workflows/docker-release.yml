@@ -46,19 +46,31 @@ jobs:
       
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v3
-      
+
     - name: Login to Docker Hub
       uses: docker/login-action@v3
       with:
         username: ${{ secrets.DOCKER_USERNAME }}
         password: ${{ secrets.DOCKER_PASSWORD }}
-        
+
     - name: Login to GitHub Container Registry
       uses: docker/login-action@v3
       with:
         registry: ghcr.io
         username: ${{ github.actor }}
         password: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Build and push base image
+      uses: docker/build-push-action@v5
+      with:
+        context: ./docker/kkfileview-base
+        platforms: linux/amd64,linux/arm64
+        push: true
+        tags: |
+          ${{ secrets.DOCKER_USERNAME }}/kkfileview-base:${{ steps.version.outputs.VERSION }}
+          ${{ secrets.DOCKER_USERNAME }}/kkfileview-base:latest
+        cache-from: type=gha,scope=base
+        cache-to: type=gha,mode=max,scope=base
         
     - name: Extract repository name
       id: repo
@@ -78,13 +90,14 @@ jobs:
         push: true
         build-args: |
           VERSION=${{ steps.version.outputs.VERSION }}
+          DOCKER_USERNAME=${{ secrets.DOCKER_USERNAME }}
         tags: |
           ${{ secrets.DOCKER_USERNAME }}/kkfileview:${{ steps.version.outputs.VERSION }}
           ${{ secrets.DOCKER_USERNAME }}/kkfileview:latest
           ghcr.io/${{ github.repository_owner }}/${{ steps.repo.outputs.REPO_NAME_LOWER }}:${{ steps.version.outputs.VERSION }}
           ghcr.io/${{ github.repository_owner }}/${{ steps.repo.outputs.REPO_NAME_LOWER }}:latest
-        cache-from: type=gha
-        cache-to: type=gha,mode=max
+        cache-from: type=gha,scope=app
+        cache-to: type=gha,mode=max,scope=app
         
     - name: Create GitHub Release
       uses: actions/create-release@v1
