@@ -24,7 +24,9 @@ import java.io.IOException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -118,7 +120,9 @@ public class DownloadUtils {
                             if (SecurityUtils.isDangerousFileType(fileExtension)) {
                                 // 对危险文件类型进行内容检查
                                 try {
-                                    String content = Files.readString(realFile.toPath(), StandardCharsets.UTF_8);
+                                    // Java 8 兼容的文件读取方式
+                                    List<String> lines = Files.readAllLines(Paths.get(realPath), StandardCharsets.UTF_8);
+                                    String content = String.join("\n", lines);
                                     if (SecurityUtils.containsMaliciousContent(content, fileExtension)) {
                                         // 删除恶意文件
                                         realFile.delete();
