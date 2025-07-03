@@ -30,6 +30,7 @@
 - 使用 spring-boot 开发，预览服务搭建部署非常简便
 - rest 接口提供服务，跨语言、跨平台特性(java,php,python,go,php，....)都支持，应用接入简单方便
 - 抽象预览服务接口，方便二次开发，非常方便添加其他类型文件预览支持
+- **增强安全机制** - 全面的安全防护体系，有效防范恶意文件攻击
 - 最最重要 Apache 协议开源，代码 pull 下来想干嘛就干嘛
 
 ### 官网及文档
@@ -422,6 +423,247 @@ dcm医疗数位影像  引用于 [dcmjs](https://github.com/dcmjs-org/dcmjs )开
 #### GitHub
 
 [![Stargazers over time](https://starchart.cc/kekingcn/kkFileView.svg)](https://starchart.cc/kekingcn/kkFileView)
+
+## 安全配置
+
+### 安全特性概述
+
+kkFileView 包含全面的安全机制来防范恶意文件攻击，包括：
+
+- **危险文件类型过滤** - 阻止潜在有害的文件类型（HTML、JS、PHP等）
+- **域名白名单控制** - 限制只能访问可信域名的文件
+- **内容安全扫描** - 检测并阻止文件中的恶意内容
+- **安全日志记录** - 对日志中的敏感URL进行脱敏处理
+
+### 安全配置选项
+
+#### 基础安全设置
+
+```properties
+# 启用安全检查（默认：true）
+security.enabled = true
+
+# 危险文件类型列表（逗号分隔）
+security.dangerous.file.types = html,htm,js,jsp,php,asp,aspx,exe,bat,cmd,sh,vbs,ps1
+
+# 启用严格域名检查（默认：true）
+security.strict.host.check = true
+
+# 启用内容安全扫描（默认：true）
+security.content.check = true
+
+# 启用日志URL脱敏（默认：true）
+security.log.url.masking = true
+```
+
+#### 域名信任配置
+
+```properties
+# 可信域名列表（逗号分隔）
+trust.host = your-trusted-domain.com,another-trusted-domain.com
+
+# 不可信域名列表（逗号分隔）
+not.trust.host = malicious-domain.com,suspicious-domain.com
+```
+
+### Docker 环境变量配置
+
+#### 安全配置示例
+
+```yaml
+version: '3.8'
+services:
+  kkfileview:
+    image: kkape/kkfileview:latest
+    container_name: kkfileview
+    ports:
+      - "8012:8012"
+    environment:
+      # 安全设置
+      - KK_SECURITY_ENABLED=true
+      - KK_DANGEROUS_FILE_TYPES=html,htm,js,jsp,php,asp,aspx,exe,bat,cmd,sh,vbs,ps1
+      - KK_STRICT_HOST_CHECK=true
+      - KK_CONTENT_SECURITY_CHECK=true
+      - KK_LOG_URL_MASKING=true
+
+      # 域名信任设置
+      - KK_TRUST_HOST=your-domain.com,trusted-domain.com
+      - KK_NOT_TRUST_HOST=malicious-domain.com
+
+      # 基础设置
+      - KK_FILE_UPLOAD_DISABLE=true
+      - KK_DELETE_PASSWORD=your-secure-password
+      - KK_API_ENABLE=false
+      - KK_CACHE_ENABLED=true
+
+      # 文件和Office设置
+      - KK_FILE_DIR=/opt/kkFileView/file
+      - KK_OFFICE_HOME=/opt/libreoffice
+      - KK_PDF2JPG_DPI=144
+
+      # 媒体设置
+      - KK_MEDIA_CONVERT_DISABLE=false
+      - KK_MEDIA=mp3,wav,mp4,flv
+
+    volumes:
+      - /your/local/path:/opt/kkFileView-4.4.0/file
+    restart: unless-stopped
+```
+
+#### 完整环境变量列表
+
+| 变量名 | 默认值 | 说明 |
+|--------|--------|------|
+| **安全相关变量** |
+| `KK_SECURITY_ENABLED` | `true` | 启用/禁用安全检查 |
+| `KK_DANGEROUS_FILE_TYPES` | `html,htm,js,jsp,php,asp,aspx,exe,bat,cmd,sh,vbs,ps1` | 需要阻止的危险文件类型 |
+| `KK_STRICT_HOST_CHECK` | `true` | 启用严格域名检查 |
+| `KK_CONTENT_SECURITY_CHECK` | `true` | 启用内容安全扫描 |
+| `KK_LOG_URL_MASKING` | `true` | 日志中URL脱敏 |
+| `KK_TRUST_HOST` | `default` | 可信域名列表（逗号分隔） |
+| `KK_NOT_TRUST_HOST` | `default` | 不可信域名列表（逗号分隔） |
+| **基础变量** |
+| `KK_SERVER_PORT` | `8012` | 服务端口 |
+| `KK_CONTEXT_PATH` | `/` | 应用上下文路径 |
+| `KK_FILE_DIR` | `default` | 文件存储目录 |
+| `KK_CACHE_ENABLED` | `true` | 启用文件缓存 |
+| `KK_FILE_UPLOAD_DISABLE` | `false` | 禁用文件上传 |
+| `KK_DELETE_PASSWORD` | `123456` | 文件删除密码 |
+| `KK_API_ENABLE` | `true` | 启用REST API |
+| `KK_BASE_URL` | `default` | 服务基础URL |
+| **Office相关变量** |
+| `KK_OFFICE_HOME` | `default` | LibreOffice安装路径 |
+| `KK_OFFICE_PREVIEW_TYPE` | `image` | Office预览类型（image/pdf） |
+| `KK_PDF2JPG_DPI` | `144` | PDF转图片DPI |
+| **媒体相关变量** |
+| `KK_MEDIA` | `mp3,wav,mp4,flv` | 支持的媒体类型 |
+| `KK_MEDIA_CONVERT_DISABLE` | `false` | 禁用媒体转换 |
+| `KK_CONVERTMEDIAS` | `avi,mov,wmv,mkv,3gp,rm` | 可转换的媒体类型 |
+
+### 安全最佳实践
+
+#### 生产环境配置
+
+```yaml
+environment:
+  # 启用所有安全功能
+  - KK_SECURITY_ENABLED=true
+  - KK_STRICT_HOST_CHECK=true
+  - KK_CONTENT_SECURITY_CHECK=true
+  - KK_LOG_URL_MASKING=true
+
+  # 严格的文件类型过滤
+  - KK_DANGEROUS_FILE_TYPES=html,htm,js,jsp,php,asp,aspx,exe,bat,cmd,sh,vbs,ps1,scr,com,pif
+
+  # 只允许可信域名
+  - KK_TRUST_HOST=your-company-domain.com
+
+  # 禁用不必要的功能
+  - KK_FILE_UPLOAD_DISABLE=true
+  - KK_API_ENABLE=false
+
+  # 安全密码
+  - KK_DELETE_PASSWORD=your-very-secure-password
+```
+
+#### 开发环境配置
+
+```yaml
+environment:
+  # 启用基础安全检查
+  - KK_SECURITY_ENABLED=true
+  - KK_STRICT_HOST_CHECK=false
+  - KK_CONTENT_SECURITY_CHECK=true
+  - KK_LOG_URL_MASKING=false
+
+  # 放宽文件类型限制用于测试
+  - KK_DANGEROUS_FILE_TYPES=exe,bat,cmd,sh,vbs,ps1
+
+  # 允许更多域名用于测试
+  - KK_TRUST_HOST=localhost,127.0.0.1,test-domain.com
+```
+
+### Docker配置问题排查
+
+#### 常见问题：信任域名不生效
+
+**问题**：设置了 `TRUST_HOST=allbs.cn` 但域名过滤不起作用。
+
+**可能原因**：
+
+1. **环境变量名称错误**
+   ```yaml
+   # ❌ 错误
+   - TRUST_HOST=allbs.cn
+
+   # ✅ 正确
+   - KK_TRUST_HOST=allbs.cn
+   ```
+
+2. **未启用严格域名检查**
+   ```yaml
+   # 添加此配置启用严格检查
+   - KK_STRICT_HOST_CHECK=true
+   ```
+
+3. **安全功能被禁用**
+   ```yaml
+   # 确保安全功能已启用
+   - KK_SECURITY_ENABLED=true
+   ```
+
+4. **配置冲突**
+   ```yaml
+   # 确保没有冲突的设置
+   - KK_NOT_TRUST_HOST=default  # 不要设置冲突的黑名单
+   ```
+
+**修正后的配置**：
+```yaml
+kkfileview:
+  image: kkape/kkfileview:latest
+  container_name: kkfileview
+  ports:
+    - "8012:8012"
+  environment:
+    # 安全配置
+    - KK_SECURITY_ENABLED=true
+    - KK_STRICT_HOST_CHECK=true
+
+    # 域名信任（使用KK_前缀）
+    - KK_TRUST_HOST=allbs.cn
+    - KK_NOT_TRUST_HOST=default
+
+    # 其他设置
+    - KK_FILE_UPLOAD_DISABLE=true
+    - KK_DELETE_PASSWORD=66666
+    - KK_API_ENABLE=false
+  volumes:
+    - /mnt/kkfileview:/opt/kkFileView-4.4.0/file
+  restart: unless-stopped
+```
+
+#### 验证步骤
+
+1. **检查容器日志**
+   ```bash
+   docker logs kkfileview | grep -i "trust\|security"
+   ```
+
+2. **测试域名过滤**
+   ```bash
+   # 应该被阻止（如果不在信任列表中）
+   curl "http://localhost:8012/onlinePreview?url=base64_encoded_url_from_untrusted_domain"
+
+   # 应该正常工作（如果在信任列表中）
+   curl "http://localhost:8012/onlinePreview?url=base64_encoded_url_from_allbs.cn"
+   ```
+
+3. **检查配置加载**
+   ```bash
+   # 进入容器检查配置
+   docker exec -it kkfileview cat /opt/kkFileView-4.4.0/config/application.properties | grep trust
+   ```
 
 ### 鸣谢
 - 本项目诞生于[凯京集团]，在取得公司高层同意后以 Apache 协议开源出来反哺社区，在此特别感谢凯京集团，以及集团领导[@唐老大](https://github.com/tangshd)的支持、@端木详笑的贡献。

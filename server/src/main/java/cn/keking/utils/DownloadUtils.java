@@ -22,6 +22,8 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.UUID;
@@ -109,6 +111,29 @@ public class DownloadUtils {
                             FileUtils.copyToFile(fileResponse.getBody(), realFile);
                             return null;
                         });
+
+                        // 下载完成后进行安全检查
+                        if (ConfigConstants.getContentSecurityCheck() && realFile.exists()) {
+                            String fileExtension = KkFileUtils.suffixFromFileName(fileName);
+                            if (SecurityUtils.isDangerousFileType(fileExtension)) {
+                                // 对危险文件类型进行内容检查
+                                try {
+                                    String content = Files.readString(realFile.toPath(), StandardCharsets.UTF_8);
+                                    if (SecurityUtils.containsMaliciousContent(content, fileExtension)) {
+                                        // 删除恶意文件
+                                        realFile.delete();
+                                        response.setCode(1);
+                                        response.setContent(null);
+                                        response.setMsg("检测到恶意内容，文件已被拒绝");
+                                        logger.warn("检测到恶意文件内容，已删除文件: {}", realPath);
+                                        return response;
+                                    }
+                                } catch (Exception e) {
+                                    logger.warn("无法读取文件内容进行安全检查: {}", realPath, e);
+                                }
+                            }
+                        }
+
                     }  catch (Exception e) {
                             response.setCode(1);
                             response.setContent(null);

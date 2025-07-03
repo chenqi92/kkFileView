@@ -1,6 +1,7 @@
 package cn.keking.web.filter;
 
 import cn.keking.config.ConfigConstants;
+import cn.keking.utils.SecurityUtils;
 import cn.keking.utils.WebUtils;
 
 import java.io.IOException;
@@ -13,6 +14,8 @@ import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 
 import org.apache.commons.collections4.CollectionUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.util.FileCopyUtils;
 
@@ -22,6 +25,7 @@ import org.springframework.util.FileCopyUtils;
  */
 public class TrustHostFilter implements Filter {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(TrustHostFilter.class);
     private String notTrustHostHtmlView;
 
     @Override
@@ -40,8 +44,18 @@ public class TrustHostFilter implements Filter {
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
         String url = WebUtils.getSourceUrl(request);
         String host = WebUtils.getHost(url);
-        assert host != null;
-        if (isNotTrustHost(host)) {
+
+        if (host == null) {
+            LOGGER.warn("无法解析请求URL的域名: {}", SecurityUtils.maskSensitiveUrl(url));
+            String html = this.notTrustHostHtmlView.replace("${current_host}", "未知域名");
+            response.getWriter().write(html);
+            response.getWriter().close();
+            return;
+        }
+
+        // 增强的安全检查
+        if (isNotTrustHost(host) || !SecurityUtils.isHostAllowedInStrictMode(host)) {
+            LOGGER.warn("拒绝来自不信任域名的请求: {}", host);
             String html = this.notTrustHostHtmlView.replace("${current_host}", host);
             response.getWriter().write(html);
             response.getWriter().close();

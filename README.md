@@ -34,6 +34,7 @@ Document online preview project solution, built using the popular Spring Boot fr
 - Basically support online preview of mainstream office documents, such as Doc, docx, Excel, PDF, TXT, zip, rar, pictures, etc
 - REST API
 - Abstract file preview interface so that it is easy to extend more file extensions and develop this project on your own
+- **Enhanced Security Features** - Comprehensive security mechanisms to prevent malicious file attacks
 
 ### Official website and DOCS
 
@@ -186,6 +187,247 @@ The year-end major update of 2020 includes comprehensive architecture design, co
 1. Fixed the issue that some module dependencies can not be found
 1. Add a spring boot profile, and support for Multi-environment configuration 
 1. Add `pdf.js` to preview the documents such as doc,etc.,support for generating doc headlines as pdf menu，support for mobile preview
+
+## Security Configuration
+
+### Security Features Overview
+
+kkFileView includes comprehensive security mechanisms to prevent malicious file attacks, including:
+
+- **Dangerous File Type Filtering** - Blocks potentially harmful file types (HTML, JS, PHP, etc.)
+- **Domain Whitelist Control** - Restricts file access to trusted domains only
+- **Content Security Scanning** - Detects and blocks malicious content in files
+- **Secure Logging** - Masks sensitive URLs in logs to prevent information leakage
+
+### Security Configuration Options
+
+#### Basic Security Settings
+
+```properties
+# Enable security checks (default: true)
+security.enabled = true
+
+# Dangerous file types list (comma-separated)
+security.dangerous.file.types = html,htm,js,jsp,php,asp,aspx,exe,bat,cmd,sh,vbs,ps1
+
+# Enable strict domain checking (default: true)
+security.strict.host.check = true
+
+# Enable content security scanning (default: true)
+security.content.check = true
+
+# Enable URL masking in logs (default: true)
+security.log.url.masking = true
+```
+
+#### Domain Trust Configuration
+
+```properties
+# Trusted domains (comma-separated)
+trust.host = your-trusted-domain.com,another-trusted-domain.com
+
+# Untrusted domains (comma-separated)
+not.trust.host = malicious-domain.com,suspicious-domain.com
+```
+
+### Docker Environment Variables
+
+#### Security Configuration
+
+```yaml
+version: '3.8'
+services:
+  kkfileview:
+    image: kkape/kkfileview:latest
+    container_name: kkfileview
+    ports:
+      - "8012:8012"
+    environment:
+      # Security Settings
+      - KK_SECURITY_ENABLED=true
+      - KK_DANGEROUS_FILE_TYPES=html,htm,js,jsp,php,asp,aspx,exe,bat,cmd,sh,vbs,ps1
+      - KK_STRICT_HOST_CHECK=true
+      - KK_CONTENT_SECURITY_CHECK=true
+      - KK_LOG_URL_MASKING=true
+
+      # Domain Trust Settings
+      - KK_TRUST_HOST=your-domain.com,trusted-domain.com
+      - KK_NOT_TRUST_HOST=malicious-domain.com
+
+      # Basic Settings
+      - KK_FILE_UPLOAD_DISABLE=true
+      - KK_DELETE_PASSWORD=your-secure-password
+      - KK_API_ENABLE=false
+      - KK_CACHE_ENABLED=true
+
+      # File and Office Settings
+      - KK_FILE_DIR=/opt/kkFileView/file
+      - KK_OFFICE_HOME=/opt/libreoffice
+      - KK_PDF2JPG_DPI=144
+
+      # Media Settings
+      - KK_MEDIA_CONVERT_DISABLE=false
+      - KK_MEDIA=mp3,wav,mp4,flv
+
+    volumes:
+      - /your/local/path:/opt/kkFileView-4.4.0/file
+    restart: unless-stopped
+```
+
+#### Complete Environment Variables List
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| **Security Variables** |
+| `KK_SECURITY_ENABLED` | `true` | Enable/disable security checks |
+| `KK_DANGEROUS_FILE_TYPES` | `html,htm,js,jsp,php,asp,aspx,exe,bat,cmd,sh,vbs,ps1` | Dangerous file types to block |
+| `KK_STRICT_HOST_CHECK` | `true` | Enable strict domain checking |
+| `KK_CONTENT_SECURITY_CHECK` | `true` | Enable content security scanning |
+| `KK_LOG_URL_MASKING` | `true` | Mask sensitive URLs in logs |
+| `KK_TRUST_HOST` | `default` | Trusted domains (comma-separated) |
+| `KK_NOT_TRUST_HOST` | `default` | Untrusted domains (comma-separated) |
+| **Basic Variables** |
+| `KK_SERVER_PORT` | `8012` | Server port |
+| `KK_CONTEXT_PATH` | `/` | Application context path |
+| `KK_FILE_DIR` | `default` | File storage directory |
+| `KK_CACHE_ENABLED` | `true` | Enable file caching |
+| `KK_FILE_UPLOAD_DISABLE` | `false` | Disable file upload |
+| `KK_DELETE_PASSWORD` | `123456` | Password for file deletion |
+| `KK_API_ENABLE` | `true` | Enable REST API |
+| `KK_BASE_URL` | `default` | Base URL for the service |
+| **Office Variables** |
+| `KK_OFFICE_HOME` | `default` | LibreOffice installation path |
+| `KK_OFFICE_PREVIEW_TYPE` | `image` | Office preview type (image/pdf) |
+| `KK_PDF2JPG_DPI` | `144` | PDF to image conversion DPI |
+| **Media Variables** |
+| `KK_MEDIA` | `mp3,wav,mp4,flv` | Supported media types |
+| `KK_MEDIA_CONVERT_DISABLE` | `false` | Disable media conversion |
+| `KK_CONVERTMEDIAS` | `avi,mov,wmv,mkv,3gp,rm` | Convertible media types |
+
+### Security Best Practices
+
+#### Production Environment
+
+```yaml
+environment:
+  # Enable all security features
+  - KK_SECURITY_ENABLED=true
+  - KK_STRICT_HOST_CHECK=true
+  - KK_CONTENT_SECURITY_CHECK=true
+  - KK_LOG_URL_MASKING=true
+
+  # Strict file type filtering
+  - KK_DANGEROUS_FILE_TYPES=html,htm,js,jsp,php,asp,aspx,exe,bat,cmd,sh,vbs,ps1,scr,com,pif
+
+  # Only allow trusted domains
+  - KK_TRUST_HOST=your-company-domain.com
+
+  # Disable unnecessary features
+  - KK_FILE_UPLOAD_DISABLE=true
+  - KK_API_ENABLE=false
+
+  # Secure password
+  - KK_DELETE_PASSWORD=your-very-secure-password
+```
+
+#### Development Environment
+
+```yaml
+environment:
+  # Basic security enabled
+  - KK_SECURITY_ENABLED=true
+  - KK_STRICT_HOST_CHECK=false
+  - KK_CONTENT_SECURITY_CHECK=true
+  - KK_LOG_URL_MASKING=false
+
+  # Relaxed file type filtering for testing
+  - KK_DANGEROUS_FILE_TYPES=exe,bat,cmd,sh,vbs,ps1
+
+  # Allow more domains for testing
+  - KK_TRUST_HOST=localhost,127.0.0.1,test-domain.com
+```
+
+### Troubleshooting Docker Configuration Issues
+
+#### Common Problem: Trust Host Not Working
+
+**Issue**: You set `TRUST_HOST=allbs.cn` but domain filtering is not working.
+
+**Possible Causes**:
+
+1. **Incorrect Environment Variable Name**
+   ```yaml
+   # ❌ Wrong
+   - TRUST_HOST=allbs.cn
+
+   # ✅ Correct
+   - KK_TRUST_HOST=allbs.cn
+   ```
+
+2. **Strict Host Check Disabled**
+   ```yaml
+   # Add this to enable strict checking
+   - KK_STRICT_HOST_CHECK=true
+   ```
+
+3. **Security Features Disabled**
+   ```yaml
+   # Ensure security is enabled
+   - KK_SECURITY_ENABLED=true
+   ```
+
+4. **Configuration Override**
+   ```yaml
+   # Make sure no conflicting settings
+   - KK_NOT_TRUST_HOST=default  # Don't set conflicting blacklist
+   ```
+
+**Corrected Configuration**:
+```yaml
+kkfileview:
+  image: kkape/kkfileview:latest
+  container_name: kkfileview
+  ports:
+    - "8012:8012"
+  environment:
+    # Security Configuration
+    - KK_SECURITY_ENABLED=true
+    - KK_STRICT_HOST_CHECK=true
+
+    # Domain Trust (use KK_ prefix)
+    - KK_TRUST_HOST=allbs.cn
+    - KK_NOT_TRUST_HOST=default
+
+    # Other Settings
+    - KK_FILE_UPLOAD_DISABLE=true
+    - KK_DELETE_PASSWORD=66666
+    - KK_API_ENABLE=false
+  volumes:
+    - /mnt/kkfileview:/opt/kkFileView-4.4.0/file
+  restart: unless-stopped
+```
+
+#### Verification Steps
+
+1. **Check Container Logs**
+   ```bash
+   docker logs kkfileview | grep -i "trust\|security"
+   ```
+
+2. **Test Domain Filtering**
+   ```bash
+   # Should be blocked (if not in trust list)
+   curl "http://localhost:8012/onlinePreview?url=base64_encoded_url_from_untrusted_domain"
+
+   # Should work (if in trust list)
+   curl "http://localhost:8012/onlinePreview?url=base64_encoded_url_from_allbs.cn"
+   ```
+
+3. **Check Configuration Loading**
+   ```bash
+   # Enter container and check config
+   docker exec -it kkfileview cat /opt/kkFileView-4.4.0/config/application.properties | grep trust
+   ```
 
 ### Sponsor Us
 If this project has been helpful to you, we welcome your sponsorship. Your support is our greatest motivation.！

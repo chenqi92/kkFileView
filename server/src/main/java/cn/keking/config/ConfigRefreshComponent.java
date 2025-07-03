@@ -82,6 +82,13 @@ public class ConfigRefreshComponent {
                 int pdfTimeout80;
                 int pdfTimeout200;
                 int pdfThread;
+                // 安全配置变量
+                boolean securityEnabled;
+                String dangerousFileTypes;
+                String[] dangerousFileTypesArray;
+                boolean strictHostCheck;
+                boolean contentSecurityCheck;
+                boolean logUrlMasking;
                 while (true) {
                     FileReader fileReader = new FileReader(configFilePath);
                     BufferedReader bufferedReader = new BufferedReader(fileReader);
@@ -136,6 +143,14 @@ public class ConfigRefreshComponent {
                     pdfThread = Integer.parseInt(properties.getProperty("pdf.thread", ConfigConstants.DEFAULT_PDF_THREAD));
                     prohibitArray = prohibit.split(",");
 
+                    // 读取安全配置
+                    securityEnabled = Boolean.parseBoolean(properties.getProperty("security.enabled", ConfigConstants.DEFAULT_SECURITY_ENABLED));
+                    dangerousFileTypes = properties.getProperty("security.dangerous.file.types", ConfigConstants.DEFAULT_DANGEROUS_FILE_TYPES);
+                    dangerousFileTypesArray = dangerousFileTypes.split(",");
+                    strictHostCheck = Boolean.parseBoolean(properties.getProperty("security.strict.host.check", ConfigConstants.DEFAULT_STRICT_HOST_CHECK));
+                    contentSecurityCheck = Boolean.parseBoolean(properties.getProperty("security.content.check", ConfigConstants.DEFAULT_CONTENT_SECURITY_CHECK));
+                    logUrlMasking = Boolean.parseBoolean(properties.getProperty("security.log.url.masking", ConfigConstants.DEFAULT_LOG_URL_MASKING));
+
                     ConfigConstants.setCacheEnabledValueValue(cacheEnabled);
                     ConfigConstants.setSimTextValue(textArray);
                     ConfigConstants.setMediaValue(mediaArray);
@@ -181,6 +196,14 @@ public class ConfigRefreshComponent {
                     ConfigConstants.setPdfTimeout80Value(pdfTimeout80);
                     ConfigConstants.setPdfTimeout200Value(pdfTimeout200);
                     ConfigConstants.setPdfThreadValue(pdfThread);
+
+                    // 设置安全配置
+                    ConfigConstants.setSecurityEnabledValue(securityEnabled);
+                    ConfigConstants.setDangerousFileTypesValue(dangerousFileTypesArray);
+                    ConfigConstants.setStrictHostCheckValue(strictHostCheck);
+                    ConfigConstants.setContentSecurityCheckValue(contentSecurityCheck);
+                    ConfigConstants.setLogUrlMaskingValue(logUrlMasking);
+
                     setWatermarkConfig(properties);
                     bufferedReader.close();
                     fileReader.close();

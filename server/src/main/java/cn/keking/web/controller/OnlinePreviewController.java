@@ -7,6 +7,7 @@ import cn.keking.service.FilePreviewFactory;
 import cn.keking.service.cache.CacheService;
 import cn.keking.service.impl.OtherFilePreviewImpl;
 import cn.keking.utils.KkFileUtils;
+import cn.keking.utils.SecurityUtils;
 import cn.keking.utils.WebUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import fr.opensagres.xdocreport.core.io.IOUtils;
@@ -73,15 +74,27 @@ public class OnlinePreviewController {
             String errorMsg = String.format(BASE64_DECODE_ERROR_MSG, "url");
             return otherFilePreview.notSupportedFile(model, errorMsg);
         }
-        FileAttribute fileAttribute = fileHandlerService.getFileAttribute(fileUrl, req);  //这里不在进行URL 处理了
+
+        FileAttribute fileAttribute = fileHandlerService.getFileAttribute(fileUrl, req);
+
+        // 安全检查
+        SecurityUtils.SecurityCheckResult securityResult = SecurityUtils.validatePreviewRequest(fileUrl, fileAttribute.getSuffix());
+        if (!securityResult.isAllowed()) {
+            logger.warn("安全检查失败: {} - URL: {}", securityResult.getReason(), SecurityUtils.maskSensitiveUrl(fileUrl));
+            return otherFilePreview.notSupportedFile(model, "安全检查失败: " + securityResult.getReason());
+        }
+
         model.addAttribute("file", fileAttribute);
         FilePreview filePreview = previewFactory.get(fileAttribute);
-        logger.info("预览文件url：{}，previewType：{}", fileUrl, fileAttribute.getType());
-        fileUrl =WebUtils.urlEncoderencode(fileUrl);
+
+        // 使用脱敏的URL记录日志
+        logger.info("预览文件url：{}，previewType：{}", SecurityUtils.maskSensitiveUrl(fileUrl), fileAttribute.getType());
+
+        fileUrl = WebUtils.urlEncoderencode(fileUrl);
         if (ObjectUtils.isEmpty(fileUrl)) {
             return otherFilePreview.notSupportedFile(model, "非法路径,不允许访问");
         }
-        return filePreview.filePreviewHandle(fileUrl, model, fileAttribute);  //统一在这里处理 url
+        return filePreview.filePreviewHandle(fileUrl, model, fileAttribute);
     }
 
     @GetMapping( "/picturesPreview")
@@ -95,7 +108,7 @@ public class OnlinePreviewController {
             String errorMsg = String.format(BASE64_DECODE_ERROR_MSG, "urls");
             return otherFilePreview.notSupportedFile(model, errorMsg);
         }
-        logger.info("预览文件url：{}，urls：{}", fileUrls, urls);
+        logger.info("预览文件url：{}，urls：{}", SecurityUtils.maskSensitiveUrl(fileUrls), SecurityUtils.maskSensitiveUrl(urls));
         // 抽取文件并返回文件列表
         String[] images = fileUrls.split("\\|");
         List<String> imgUrls = Arrays.asList(images);
@@ -134,7 +147,7 @@ public class OnlinePreviewController {
             return;
         }
         InputStream inputStream = null;
-        logger.info("读取跨域pdf文件url：{}", urlPath);
+        logger.info("读取跨域pdf文件url：{}", SecurityUtils.maskSensitiveUrl(urlPath));
         if (!urlPath.toLowerCase().startsWith("ftp:")) {
             factory.setConnectionRequestTimeout(2000);
             factory.setConnectTimeout(10000);

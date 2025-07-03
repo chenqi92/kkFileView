@@ -72,6 +72,13 @@ public class ConfigConstants {
     private static int pdfTimeout200;
     private static int pdfThread;
 
+    // 新增安全配置
+    private static Boolean securityEnabled;
+    private static String[] dangerousFileTypes = {};
+    private static Boolean strictHostCheck;
+    private static Boolean contentSecurityCheck;
+    private static Boolean logUrlMasking;
+
     public static final String DEFAULT_CACHE_ENABLED = "true";
     public static final String DEFAULT_TXT_TYPE = "txt,html,htm,asp,jsp,xml,json,properties,md,gitignore,log,java,py,c,cpp,sql,sh,bat,m,bas,prg,cmd,xbrl";
     public static final String DEFAULT_MEDIA_TYPE = "mp3,wav,mp4,flv";
@@ -115,6 +122,13 @@ public class ConfigConstants {
     public static final String DEFAULT_PDF_TIMEOUT80 = "180";
     public static final String DEFAULT_PDF_TIMEOUT200 = "300";
     public static final String DEFAULT_PDF_THREAD = "5";
+
+    // 新增安全配置默认值
+    public static final String DEFAULT_SECURITY_ENABLED = "true";
+    public static final String DEFAULT_DANGEROUS_FILE_TYPES = "html,htm,js,jsp,php,asp,aspx,exe,bat,cmd,sh,vbs,ps1";
+    public static final String DEFAULT_STRICT_HOST_CHECK = "true";
+    public static final String DEFAULT_CONTENT_SECURITY_CHECK = "true";
+    public static final String DEFAULT_LOG_URL_MASKING = "true";
 
     public static Boolean isCacheEnabled() {
         return cacheEnabled;
@@ -810,6 +824,73 @@ public class ConfigConstants {
 
     public static void setHomeSearchValue(String homeSearch) {
         ConfigConstants.homeSearch = homeSearch;
+    }
+
+    // 新增安全配置的getter和setter方法
+    public static Boolean getSecurityEnabled() {
+        return securityEnabled;
+    }
+
+    @Value("${security.enabled:" + DEFAULT_SECURITY_ENABLED + "}")
+    public void setSecurityEnabled(String securityEnabled) {
+        setSecurityEnabledValue(Boolean.parseBoolean(securityEnabled));
+    }
+
+    public static void setSecurityEnabledValue(Boolean securityEnabled) {
+        ConfigConstants.securityEnabled = securityEnabled;
+    }
+
+    public static String[] getDangerousFileTypes() {
+        return dangerousFileTypes;
+    }
+
+    @Value("${security.dangerous.file.types:" + DEFAULT_DANGEROUS_FILE_TYPES + "}")
+    public void setDangerousFileTypes(String dangerousFileTypes) {
+        String[] dangerousFileTypesArr = dangerousFileTypes.split(",");
+        setDangerousFileTypesValue(dangerousFileTypesArr);
+    }
+
+    public static void setDangerousFileTypesValue(String[] dangerousFileTypes) {
+        ConfigConstants.dangerousFileTypes = dangerousFileTypes;
+    }
+
+    public static Boolean getStrictHostCheck() {
+        return strictHostCheck;
+    }
+
+    @Value("${security.strict.host.check:" + DEFAULT_STRICT_HOST_CHECK + "}")
+    public void setStrictHostCheck(String strictHostCheck) {
+        setStrictHostCheckValue(Boolean.parseBoolean(strictHostCheck));
+    }
+
+    public static void setStrictHostCheckValue(Boolean strictHostCheck) {
+        ConfigConstants.strictHostCheck = strictHostCheck;
+    }
+
+    public static Boolean getContentSecurityCheck() {
+        return contentSecurityCheck;
+    }
+
+    @Value("${security.content.check:" + DEFAULT_CONTENT_SECURITY_CHECK + "}")
+    public void setContentSecurityCheck(String contentSecurityCheck) {
+        setContentSecurityCheckValue(Boolean.parseBoolean(contentSecurityCheck));
+    }
+
+    public static void setContentSecurityCheckValue(Boolean contentSecurityCheck) {
+        ConfigConstants.contentSecurityCheck = contentSecurityCheck;
+    }
+
+    public static Boolean getLogUrlMasking() {
+        return logUrlMasking;
+    }
+
+    @Value("${security.log.url.masking:" + DEFAULT_LOG_URL_MASKING + "}")
+    public void setLogUrlMasking(String logUrlMasking) {
+        setLogUrlMaskingValue(Boolean.parseBoolean(logUrlMasking));
+    }
+
+    public static void setLogUrlMaskingValue(Boolean logUrlMasking) {
+        ConfigConstants.logUrlMasking = logUrlMasking;
     }
 
 }
